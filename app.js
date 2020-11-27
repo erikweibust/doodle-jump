@@ -6,10 +6,14 @@ document.addEventListener('DOMContentLoaded', () => {
    let doodlerBottomSpace = 150;
    let isGameOver = false;
    let platformCount = 5;
+   let platforms = [];
+   let upTimerId;
+   let downTimerId;
 
    function createDoodler() {
       grid.appendChild(doodler);
       doodler.classList.add('doodler');
+      doodlerLeftSpace = platforms[0].left;
       doodler.style.left = doodlerLeftSpace + 'px';
       doodler.style.bottom = doodlerBottomSpace + 'px';
    }
@@ -33,14 +37,58 @@ document.addEventListener('DOMContentLoaded', () => {
          let platGap = 600 / platformCount;
          let newPlatBottom = 100 + i * platGap;
          let newPlatform = new Platform(newPlatBottom);
+         platforms.push(newPlatform);   
+         console.log(platforms);
       }
+   }
 
+   function movePlatforms() {
+      if (doodlerBottomSpace > 200) {
+         platforms.forEach(platform => {
+            platform.bottom = platform.bottom - 4;
+            let visual = platform.visual;
+            visual.style.bottom = `${platform.bottom}px`
+         })
+      }
+   }
+
+   function jump() {
+      clearInterval(downTimerId);
+      upTimerId = setInterval(function() {
+         doodlerBottomSpace += 20;      
+         doodler.style.bottom = doodlerBottomSpace + 'px';
+
+         if (doodlerBottomSpace > 350) {
+            fall(); 
+         }
+      }, 30);
+   }
+
+   function fall() {
+      clearInterval(upTimerId)
+      downTimerId = setInterval(function () {
+         doodlerBottomSpace -= 5;
+         doodler.style.bottom = doodlerBottomSpace + 'px';
+
+         if (doodlerBottomSpace <= 0) {
+            gameOver();
+         }
+      }, 30);
+   }
+
+   function gameOver() {
+      console.log('*** game over!');
+      isGameOver = true;
+      clearInterval(upTimerId);
+      clearInterval(downTimerId);
    }
 
    function start() {
       if (!isGameOver) { // if the game is NOT over; or just started
-         createDoodler()
          createPlatforms();
+         createDoodler();
+         setInterval(movePlatforms, 30);
+         jump();
       }
    } // attach to button
    start()
